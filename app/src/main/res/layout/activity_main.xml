@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="TextFields" />
 
-    <AutoCompleteTextView
+   <!-- <AutoCompleteTextView
         android:id="@+id/to_station"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -26,7 +26,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/from_station"
-        tools:ignore="TextFields" />
+        tools:ignore="TextFields" />-->
 
     <Button
         android:id="@+id/parse"
@@ -36,7 +36,7 @@
         android:text="@string/parse"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/to_station" />
+        app:layout_constraintTop_toBottomOf="@+id/from_station" />
 
     <ScrollView
         android:layout_width="match_parent"

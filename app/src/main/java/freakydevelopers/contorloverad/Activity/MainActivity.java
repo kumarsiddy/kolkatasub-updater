@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button parseBtn;
     private TextView textView;
     private List<Train> trains = new ArrayList<>();
-    private AutoCompleteTextView fromStation, toStation;
+    private AutoCompleteTextView fromStation /*toStation*/;
     private Map<String, String> stationMap = new HashMap<>();
     private List<String> strings = new ArrayList<>();
     private Context context;
@@ -73,7 +72,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initView() {
         fromStation = findViewById(R.id.from_station);
-        toStation = findViewById(R.id.to_station);
+//        toStation = findViewById(R.id.to_station);
+        fromStation.setText("http://kolkatalocaltrain.info/sealdah-railway-station");
         parseBtn = findViewById(R.id.parse);
         textView = findViewById(R.id.text);
         parseBtn.setOnClickListener(this);
@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 
             case R.id.parse:
-                parseURL(getCompleteURL(fromStation.getText().toString(), toStation.getText().toString()));
+                parseURL(fromStation.getText().toString());
                 break;
 
         }
@@ -170,9 +170,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     @Override
                     public void onComplete() {
-                        ArrayAdapter adapter = new ArrayAdapter(context, android.R.layout.simple_list_item_1, strings.toArray(new String[strings.size()]));
-                        fromStation.setAdapter(adapter);
-                        toStation.setAdapter(adapter);
+//                        ArrayAdapter adapter = new ArrayAdapter(context, android.R.layout.simple_list_item_1, strings.toArray(new String[strings.size()]));
+//                        fromStation.setAdapter(adapter);
+//                        toStation.setAdapter(adapter);
                     }
                 });
     }
@@ -206,35 +206,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onNext(Document document) {
 
                         try {
-
-
-                            Element element = document.select("table[class=TrainsList table table-bordered table-condensed ]").first();
+                            Element element = document.select("table[class=TrainsListPassing table table-bordered table-condensed]").first();
                             final Element tagtbody = element.getElementsByTag("tbody").first();
 
                             final Elements rows = tagtbody.children();
 
 
                             for (int i = 1; i < rows.size(); ++i) {
-                                String trainNo, trainName, arrivalTime, departureTime, runningDay;
-                                final Element row = rows.get(i);
+                                String trainNo, trainName, arrivalTime, departureTime, runningDay, linkToSchedule;
+                                final Element row = rows.get(i); //It is denotion for tr
 
-                                if (row.childNodeSize() == 8) {
+                               /* if (row.childNodeSize() == 12) {*/
 
-                                    runningDay = row.child(0).child(0).child(0).child(1).child(1).text();
-                                    trainNo = row.child(3).getElementsByTag("a").first().text();
-                                    trainName = row.child(4).text();
-                                    arrivalTime = row.child(5).text().replace(".", ":");
-                                    departureTime = row.child(6).text().replace(".", ":");
+                                runningDay = row.child(11).text();
+                                String[] strings = row.child(1).text().split(",");
+                                trainNo = strings[0].trim();
+                                trainName = strings[1].trim();
+                                Element link = row.child(1).getElementsByTag("a").first();
+                                linkToSchedule = "http://kolkatalocaltrain.info" + link.attr("href");
 
-                                    trains.add(new Train(
-                                            trainName,
-                                            trainNo,
-                                            runningDay
-                                    ));
-                                } else {
-                                    Logger.d("FUCK YOU!!!");
-                                }
+                                trains.add(new Train(
+                                        trainName,
+                                        trainNo,
+                                        runningDay,
+                                        linkToSchedule
+                                ));
 
+                                Logger.d(runningDay + " " + trainNo + " " + trainName + " " + linkToSchedule);
                             }
                         } catch (Exception e) {
                             e.printStackTrace();

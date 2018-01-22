@@ -11,14 +11,16 @@ public class Train implements Serializable {
     private String trainName;
     private String trainNo;
     private TrainDay trainDay;
+    private String linkToSchedule;
 
     public Train() {
     }
 
-    public Train(String trainName, String trainNo, String runningDay) {
+    public Train(String trainName, String trainNo, String runningDay, String linkToSchedule) {
         this.trainName = trainName;
         this.trainNo = trainNo;
         trainDay = new TrainDay(runningDay);
+        this.linkToSchedule = linkToSchedule;
     }
 
     public String getTrainName() {
@@ -45,4 +47,11 @@ public class Train implements Serializable {
         this.trainDay = trainDay;
     }
 
+    public String getLinkToSchedule() {
+        return linkToSchedule;
+    }
+
+    public void setLinkToSchedule(String linkToSchedule) {
+        this.linkToSchedule = linkToSchedule;
+    }
 }

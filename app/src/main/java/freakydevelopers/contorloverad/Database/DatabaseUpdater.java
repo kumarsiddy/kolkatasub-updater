@@ -1,3 +1,4 @@
+/*
 package freakydevelopers.contorloverad.Database;
 
 import android.content.Context;
@@ -16,14 +17,11 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-import static freakydevelopers.contorloverad.Utils.Constants.SUN;
-import static freakydevelopers.contorloverad.Utils.Constants.TRAINNAME;
-import static freakydevelopers.contorloverad.Utils.Constants.TRAINNO;
-import static freakydevelopers.contorloverad.Utils.Constants.TRAINTABLE;
-
+*/
 /**
  * Created by PURUSHOTAM on 1/19/2018.
- */
+ *//*
+
 
 public class DatabaseUpdater {
 
@@ -109,3 +107,4 @@ public class DatabaseUpdater {
 
 
 }
+*/

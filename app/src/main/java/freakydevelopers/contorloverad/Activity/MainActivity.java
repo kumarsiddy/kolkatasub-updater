@@ -4,8 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -13,8 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import freakydevelopers.contorloverad.Database.MySQLiteOpenHelper;
 import freakydevelopers.contorloverad.Pojo.Train;
 import freakydevelopers.contorloverad.R;
 import freakydevelopers.contorloverad.Utils.Logger;
@@ -38,7 +33,6 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -49,15 +43,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private Observable<Document> myObservable;
     private Observable<Document> myObservable2;
-    private EditText enterURL;
-    private Button parseBtn;
-    private TextView textView;
+    private Button parseBtn, fetchStationBtn, saveToStorage;
     private List<Train> trains = new ArrayList<>();
-    private AutoCompleteTextView fromStation /*toStation*/;
+    private AutoCompleteTextView fromStation, toStation;
     private Map<String, String> stationMap = new HashMap<>();
     private List<String> strings = new ArrayList<>();
     private Context context;
-    private MySQLiteOpenHelper mySQLiteOpenHelper;
+    private boolean whichBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,16 +59,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initView();
         parseStations();
         isStoragePermissionGranted();
-        mySQLiteOpenHelper = new MySQLiteOpenHelper(context.getApplicationContext());
     }
 
     private void initView() {
         fromStation = findViewById(R.id.from_station);
-//        toStation = findViewById(R.id.to_station);
+        toStation = findViewById(R.id.to_station);
         fromStation.setText("http://kolkatalocaltrain.info/sealdah-railway-station");
+        toStation.setText("http://kolkatalocaltrain.info/sealdah-railway-station");
         parseBtn = findViewById(R.id.parse);
-        textView = findViewById(R.id.text);
+        fetchStationBtn = findViewById(R.id.fetch_station);
+        saveToStorage = findViewById(R.id.save_database);
         parseBtn.setOnClickListener(this);
+        fetchStationBtn.setOnClickListener(this);
+        saveToStorage.setOnClickListener(this);
     }
 
     private void initObserver(final String url) {
@@ -99,24 +94,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onStart();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String query = "select * from db_information";
-
-        try (SQLiteDatabase database = mySQLiteOpenHelper.getReadableDatabase()) {
-            Cursor cursor = database.rawQuery(query, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    String s = cursor.getString(cursor.getColumnIndexOrThrow("dbdate"));
-                    Logger.d(s);
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     protected void onDestroy() {
@@ -132,7 +109,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 
             case R.id.parse:
+                whichBtn = true;
                 parseURL(fromStation.getText().toString());
+                break;
+            case R.id.fetch_station:
+                whichBtn = false;
+                parseURL(toStation.getText().toString());
                 break;
 
         }
@@ -142,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initObserver2();
 
         myObservable2
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.newThread())
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(new Observer<Document>() {
                     @Override
@@ -232,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         linkToSchedule
                                 ));
 
-                                Logger.d(runningDay + " " + trainNo + " " + trainName + " " + linkToSchedule);
+//                                Logger.d(runningDay + " " + trainNo + " " + trainName + " " + linkToSchedule);
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -246,9 +228,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     @Override
                     public void onComplete() {
-                        Intent intent = new Intent(getApplicationContext(), TrainListActivity.class);
-                        intent.putExtra("list", (Serializable) trains);
-                        startActivity(intent);
+                        if (whichBtn) {
+                            Intent intent = new Intent(getApplicationContext(), TrainListActivity.class);
+                            intent.putExtra("list", (Serializable) trains);
+                            startActivity(intent);
+                        } else {
+                            Intent intent = new Intent(getApplicationContext(), StationFetchActivity.class);
+                            intent.putExtra("list", (Serializable) trains);
+                            startActivity(intent);
+                        }
+
                     }
                 });
     }
@@ -292,7 +281,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Logger.d("Permission is granted");
                 return true;
             } else {
-
                 Logger.d("Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;

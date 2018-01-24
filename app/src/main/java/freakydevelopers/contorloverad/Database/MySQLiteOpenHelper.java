@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import freakydevelopers.contorloverad.Pojo.Station;
 import freakydevelopers.contorloverad.Pojo.Train;
 import freakydevelopers.contorloverad.Pojo.TrainDay;
 import freakydevelopers.contorloverad.Utils.Logger;
@@ -33,7 +34,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     private SQLiteDatabase mDataBase;
 
     //Constants for the Table
-    private static final String TRAINID = "_id";
+    private static final String ID = "_id";
     private static final String TRAINTABLE = "train_table";
     private static final String TRAINNO = "trainNO";
     private static final String TRAINNAME = "trainName";
@@ -41,6 +42,10 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
 
     private static final String ROUTETABLE = "route_table";
     private static final String ROUTETRAINID = "trainId";
+    private static final String ROUTESTATIONID = "stationId";
+    private static final String ROUTEARRIVAL = "arrival";
+    private static final String ROUTEDATEPLUS = "datePlus";
+    private static final String ROUTEDISTANCE = "distance";
 
     private static final String STATIONTABLE = "station_table";
     private static final String STATIONCODE = "stationCode";
@@ -258,13 +263,66 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void checkAndUpdateTrain(Train train) {
+    public void checkAndUpdateTrain(String trainNo, List<Station> stations) {
         openDataBase();
         try {
             String updateStationQry = "select * from " + ROUTETABLE + " r inner join(select _id from " + TRAINTABLE + " where trainNO=?)t on r.trainId=t._id;";
-            String[] args = {train.getTrainNo()};
+            String[] args = {trainNo};
             Cursor cursor = mDataBase.rawQuery(updateStationQry, args);
+            int trainId = 0;
 
+            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                trainId = cursor.getInt(cursor.getColumnIndexOrThrow(ROUTETRAINID));
+            }
+
+            if (cursor != null && cursor.getCount() > 0 && cursor.getCount() == stations.size()) {
+                for (Station station : stations) {
+                    ContentValues values = new ContentValues();
+                    values.put(ROUTEARRIVAL, station.getArrival());
+                    values.put(ROUTEDISTANCE, station.getDistance());
+                    values.put(ROUTEDATEPLUS, station.getDatePlus());
+
+                    String where = ROUTETRAINID + "=" + trainId + " And " + ROUTESTATIONID + " = " + station.getStationId();
+                    int rowUpdated = mDataBase.update(ROUTETABLE, values, where, null);
+                    Logger.d("ROW Updated " + rowUpdated + " For " + trainNo);
+                }
+            } else if (cursor != null && cursor.getCount() > 0 && cursor.getCount() != stations.size()) {
+                String where = ROUTETRAINID + "=" + trainId;
+                int rowDeleted = mDataBase.delete(ROUTETABLE, where, null);
+                Logger.d("DELETED ROWS " + rowDeleted);
+                for (Station station : stations) {
+                    ContentValues values = new ContentValues();
+                    values.put(ROUTETRAINID, trainId);
+                    values.put(ROUTESTATIONID, station.getStationId());
+                    values.put(ROUTEARRIVAL, station.getArrival());
+                    values.put(ROUTEDATEPLUS, station.getDatePlus());
+                    values.put(ROUTEDISTANCE, station.getDistance());
+
+                    long _id = mDataBase.insert(ROUTETABLE, null, values);
+                    Logger.d("_id of Row  " + _id + " For " + trainNo);
+                }
+            } else {
+
+                String qry = "select _id from " + TRAINTABLE + " where trainNO=" + trainNo;
+                Cursor cursor_ = mDataBase.rawQuery(qry, null);
+                if (cursor_ != null && cursor_.moveToFirst()) {
+                    trainId = cursor_.getInt(cursor_.getColumnIndexOrThrow(ID));
+                }
+                for (Station station : stations) {
+                    ContentValues values = new ContentValues();
+                    values.put(ROUTETRAINID, trainId);
+                    values.put(ROUTESTATIONID, station.getStationId());
+                    values.put(ROUTEARRIVAL, station.getArrival());
+                    values.put(ROUTEDATEPLUS, station.getDatePlus());
+                    values.put(ROUTEDISTANCE, station.getDistance());
+                    long _id = mDataBase.insert(ROUTETABLE, null, values);
+                    Logger.d("_id of New Row  " + _id + " For " + trainNo);
+                }
+                if (cursor_ != null)
+                    cursor_.close();
+            }
+            if (cursor != null)
+                cursor.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -272,7 +330,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
         }
     }
 
-    public int getStationId(String stationCode) {
+    public int getStationId(String stationCode, String stationName) {
         openDataBase();
         try {
             int stationId = 0;
@@ -280,10 +338,18 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
             Cursor cursor = mDataBase.rawQuery(query, null);
             if (cursor.moveToFirst()) {
                 do {
-                    stationId = cursor.getInt(cursor.getColumnIndexOrThrow(TRAINID));
+                    stationId = cursor.getInt(cursor.getColumnIndexOrThrow(ID));
                 } while (cursor.moveToNext());
             }
             cursor.close();
+            if (stationId == 0) {
+                ContentValues values = new ContentValues();
+                values.put(STATIONNAME, stationName);
+                values.put(STATIONCODE, stationCode);
+                stationId = (int) mDataBase.insert(STATIONTABLE, null, values);
+                Logger.d("New StationId==" + stationId);
+            }
+
             return stationId;
         } catch (Exception e) {
             e.printStackTrace();

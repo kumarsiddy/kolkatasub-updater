@@ -50,6 +50,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<String> strings = new ArrayList<>();
     private Context context;
     private boolean whichBtn;
+    //    private static final String URL = "http://kolkatalocaltrain.info/howrah-jn-railway-station"; // Howrah Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/sealdah-railway-station";   // Sealdah Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/bandel-jn-railway-station";  // Bandel Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/barddhaman-railway-station";   // Burdwan Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/dum-dum-railway-station";   // Dum Dum Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/lalgola-railway-station";   // Lalgola Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/shantipur-railway-station";   // Shantipur Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/gede-railway-station";   // Gede Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/ranaghat-jn-railway-station";   // Ranaghat Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/naihati-jn-railway-station";   // Naihati Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/barasat-jn-railway-station";   // Barasat  Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/hasanabad-jn-railway-station";   // Barasat  Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/ballygunge-jn-railway-station";   // Ballygunge  Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/sonarpur-jn-railway-station";   // Sonarpur  Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/canning-railway-station";   // Canning  Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/baruipur-jn-railway-station";   // Baruipur  Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/diamond-harbour-railway-station";   // Diamond Harbour Junction
+//    private static final String URL = "http://kolkatalocaltrain.info/budge-budge-railway-station";   // Budge Budge Railway Station
+//    private static final String URL = "http://kolkatalocaltrain.info/lakshmikantapur-railway-station";   // LakshmiKantpur Station
+//    private static final String URL = "http://kolkatalocaltrain.info/namkhana-railway-station";   // Namkhana Station
+//    private static final String URL = "http://kolkatalocaltrain.info/kamarkundu-railway-station";   // Kamarkundu Station
+//    private static final String URL = "http://kolkatalocaltrain.info/seoraphuli-jn-railway-station";   // Seoraphulli Station
+//    private static final String URL = "http://kolkatalocaltrain.info/santragachi-jn-railway-station";   // Santragachi Station
+//    private static final String URL = "http://kolkatalocaltrain.info/kharagpur-jn-railway-station";   // Kharagpur Station
+    private static final String URL = "http://kolkatalocaltrain.info/bangaon-jn-railway-station";   // Kharagpur Station
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +90,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initView() {
         fromStation = findViewById(R.id.from_station);
         toStation = findViewById(R.id.to_station);
-        fromStation.setText("http://kolkatalocaltrain.info/sealdah-railway-station");
-        toStation.setText("http://kolkatalocaltrain.info/sealdah-railway-station");
+        fromStation.setText(URL);
+        toStation.setText(URL);
         parseBtn = findViewById(R.id.parse);
         fetchStationBtn = findViewById(R.id.fetch_station);
         saveToStorage = findViewById(R.id.save_database);
@@ -285,7 +311,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
             }
-        } else { //permission is automatically granted on sdk<23 upon installation
+        } else {
+            //permission is automatically granted on sdk<23 upon installation
             Logger.d("Permission is granted");
             return true;
         }

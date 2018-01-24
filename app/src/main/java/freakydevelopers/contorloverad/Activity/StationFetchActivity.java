@@ -111,15 +111,21 @@ public class StationFetchActivity extends AppCompatActivity implements View.OnCl
                                         arrival = row.child(6).text().trim().replace(".", ":");
                                     else
                                         arrival = row.child(5).text().trim().replace(".", ":");
-                                    stationId = mySQLiteOpenHelper.getStationId(stationCode.trim());
+                                    stationId = mySQLiteOpenHelper.getStationId(stationCode.trim(), stationName.trim());
                                     distance = Integer.parseInt(row.child(8).text().trim());
                                     datePlus = Integer.parseInt(row.child(9).text().trim());
                                     stations.add(
                                             new Station(
-
+                                                    stationName,
+                                                    stationCode,
+                                                    stationId,
+                                                    distance,
+                                                    arrival,
+                                                    datePlus
                                             ));
 //                                    Logger.d(train.getTrainNo() + "  " + stationName + "  " + stationCode + "  " + arrival + "  " + stationId + "  " + distance + "  " + datePlus);
                                 }
+                                mySQLiteOpenHelper.checkAndUpdateTrain(train.getTrainNo(), stations);
                             } else {
                                 Logger.d("Manual" + train.getTrainNo());
                             }
@@ -137,7 +143,7 @@ public class StationFetchActivity extends AppCompatActivity implements View.OnCl
 
                     @Override
                     public void onComplete() {
-
+                        Logger.d("Baby It's Finished!!");
                     }
                 });
     }
